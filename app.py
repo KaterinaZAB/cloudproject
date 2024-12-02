@@ -6,7 +6,7 @@ from flask_caching.backends import SimpleCache
 from flask_caching import Cache  # Импортируем модуль для кэширования
 import os
 
-# Инициализация Flask приложения
+# инициализация Flask приложения
 app = Flask(__name__)
 
 @app.route('/')

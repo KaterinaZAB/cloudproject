@@ -1,0 +1,54 @@
+version: "3"
+
+networks:
+  flask_net:
+
+services:
+  web:
+    build: . # Сборка образа из текущей директории
+    ports:
+      - "5000" # Пробрасываем порт Flask-приложения
+    depends_on:
+      - db
+      - redis
+    environment:
+      - REDIS_HOST=redis # Настраиваем переменную окружения для Redis
+      - SQLALCHEMY_DATABASE_URI=postgresql://user:password@db:5432/flask_db # Настраиваем подключение к базе данных
+    networks:
+      - flask_net
+
+  db:
+    image: postgres:13 # Используем образ PostgreSQL
+    environment:
+      POSTGRES_USER: user # Имя пользователя базы данных
+      POSTGRES_PASSWORD: password # Пароль пользователя базы данных
+      POSTGRES_DB: flask_db # Имя базы данных
+    ports:
+      - "5432:5432" # Пробрасываем порт PostgreSQL
+
+  redis:
+    image: "redis:alpine" # Используем образ Redis
+    ports:
+      - "6379:6379" # Пробрасываем порт Redis
+
+  nginx:
+    image: nginx:latest # Используем последний образ Nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf # Подключаем локальный файл конфигурации Nginx
+    ports:
+      - "80:80" # Пробрасываем порт 80 для внешнего доступа
+    depends_on:
+      - web # Nginx зависит от Flask-приложения
+    networks:
+      - flask_net
+
+  test:
+    build:
+      context: . # Сборка образа для тестов из текущей директории
+      dockerfile: Dockerfile.test # Указываем Dockerfile для тестирования
+    depends_on:
+      - db
+      - redis
+    environment:
+      - REDIS_HOST=redis # Настраиваем переменную окружения для Redis
+      - SQLALCHEMY_DATABASE_URI=postgresql://user:password@db:5432/flask_db # Настраиваем подключение к базе данных

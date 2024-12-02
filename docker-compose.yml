@@ -35,12 +35,21 @@ services:
     image: nginx:latest # Используем последний образ Nginx
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf # Подключаем локальный файл конфигурации Nginx
+      - ./letsencrypt:/etc/letsencrypt # Для хранения сертификатов
+      - ./certbot:/var/www/certbot # Для временных файлов Certbot
     ports:
       - "80:80" # Пробрасываем порт 80 для внешнего доступа
+      - "443:443" # Пробрасываем порт 443 для HTTPS
     depends_on:
       - web # Nginx зависит от Flask-приложения
     networks:
       - flask_net
+
+  certbot:
+    image: certbot/certbot # Используем образ Certbot
+    volumes:
+      - ./letsencrypt:/etc/letsencrypt # Для хранения сертификатов
+      - ./certbot:/var/www/certbot # Для временных файлов Certbot
 
   test:
     build:

@@ -49,10 +49,35 @@ jobs:
           username: ${{ secrets.HOSTING_NAME }}
           password: ${{ secrets.HOSTING_PASSWORD }}
           script: |
-            apt-get update
-            apt-get install -y docker.io
-            docker image prune -f 
-            docker pull ${{ secrets.DOCKER_USERNAME }}/flask-app:latest 
-            docker stop flask-app || true 
-            docker rm flask-app || true 
-            docker run -d --name flask-app -p 80:5000 ${{ secrets.DOCKER_USERNAME }}/flask-app:latest
+
+            sudo apt-get update
+            sudo apt-get upgrade -y
+            sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+            sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+            sudo apt-get update
+            sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+            sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")')/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+
+            APP_DIR="/root/cloud"
+
+            if [ ! -d "$APP_DIR" ]; then
+              git clone https://github.com/KaterinaZAB/cloudproject.git $APP_DIR
+            else
+              cd "$APP_DIR" || exit 1
+              git fetch --all
+              git reset --hard origin/main
+            fi
+
+            cd $APP_DIR
+
+            docker-compose down || true
+
+            docker-compose pull
+
+            docker-compose -f docker-compose.server.yml up -d --build
+
+            docker exec -i cloud-web-1 flask db init
+            docker exec -i cloud-web-1 flask db migrate -m "Initial migration."
+            docker exec -i cloud-web-1 flask db upgrade

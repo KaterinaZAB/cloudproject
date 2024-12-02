@@ -76,7 +76,7 @@ jobs:
 
             docker-compose pull
 
-            docker-compose -f docker-compose.server.yml up -d --build
+            docker-compose -f docker-compose.yml up -d --build
 
             docker exec -i cloud-web-1 flask db init
             docker exec -i cloud-web-1 flask db migrate -m "Initial migration."

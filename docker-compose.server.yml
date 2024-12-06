@@ -5,9 +5,9 @@ networks:
 
 services:
   web:
-    build: . 
+    build: .
     ports:
-      - "5000:5000" 
+      - "5000:5000"
     expose:
       - "5000"
     depends_on:
@@ -15,15 +15,10 @@ services:
       - redis
       - prometheus
     environment:
-      - REDIS_HOST=redis 
-      - SQLALCHEMY_DATABASE_URI=postgresql://user:password@db:5432/flask_db 
+      - REDIS_HOST=redis
+      - SQLALCHEMY_DATABASE_URI=postgresql://user:password@db:5432/flask_db
     networks:
       - flask_net
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:5000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
     logging:
       driver: "json-file"
       options:
@@ -31,27 +26,20 @@ services:
         max-file: "3"
 
   db:
-    image: postgres:13 
+    image: postgres:13
     environment:
-      POSTGRES_USER: user 
-      POSTGRES_PASSWORD: password 
-      POSTGRES_DB: flask_db 
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: flask_db
     ports:
-      - "5432:5432" 
+      - "5432:5432"
     networks:
       - flask_net
 
   redis:
-    image: "redis:alpine" 
+    image: "redis:alpine"
     ports:
-      - "6379:6379" 
-    networks:
-      - flask_net
-
-  node-exporter:
-    image: prom/node-exporter
-    ports:
-      - "9100:9100"
+      - "6379:6379"
     networks:
       - flask_net
 
@@ -68,12 +56,20 @@ services:
       - web
     networks:
       - flask_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://web:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   certbot:
     image: certbot/certbot
     volumes:
       - ./letsencrypt:/etc/letsencrypt
       - ./certbot:/var/www/certbot
+    deploy:
+      restart_policy:
+        condition: none
 
   prometheus:
     image: prom/prometheus:latest
@@ -132,6 +128,9 @@ services:
     environment:
       - REDIS_HOST=redis
       - SQLALCHEMY_DATABASE_URI=postgresql://user:password@db:5432/flask_db
+    deploy:
+      restart_policy:
+        condition: none
 
 volumes:
   esdata:

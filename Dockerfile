@@ -1,17 +1,15 @@
-#Используем базовый образ Python
+# базовый образ Python
 FROM python:3.9-alpine
-#Устанавливаем рабочую директорию
+
 WORKDIR /app
-#Копируем файл зависимостей и устанавливаем их
+# копирование файла зависимостей и устанавливаем их
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
-RUN pip install flask-sqlalchemy flask-migrate psycopg2-binary redis Flask-Caching
+RUN pip install flask-sqlalchemy flask-migrate psycopg2-binary redis Flask-Caching prometheus-flask-exporter
 
 ENV SQLALCHEMY_DATABASE_URI=postgresql://user:password@db:5432/flask_db
 ENV REDIS_HOST=redis
-#Копируем исходный код приложения
+# копирование исходного кода приложения
 COPY . .
-#Открываем порт 5000 для Flask
 EXPOSE 5000
-#Команда для запуска приложения
 CMD ["python", "app.py"]

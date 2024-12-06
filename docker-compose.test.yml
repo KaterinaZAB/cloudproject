@@ -5,13 +5,13 @@ services:
       context: .
       dockerfile: Dockerfile.test
     ports:
-      - "5000:5000" # Пробрасываем порт Flask-приложения
+      - "5000:5000" # пробрасываем порт Flask-приложения
     depends_on:
       - db
       - redis
     environment:
-      - REDIS_HOST=redis # Настраиваем переменную окружения для Redis
-      - SQLALCHEMY_DATABASE_URI=postgresql://user:password@db:5432/flask_db # Настраиваем подключение к базе данных
+      - REDIS_HOST=redis # настраиваем переменную окружения для Redis
+      - SQLALCHEMY_DATABASE_URI=postgresql://user:password@db:5432/flask_db # настраиваем подключение к базе данных
 
   db:
     image: postgres:13
@@ -20,9 +20,9 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: flask_db
     ports:
-      - "5432:5432" # Пробрасываем порт PostgreSQL
+      - "5432:5432" # пробрасываем порт PostgreSQL
 
   redis:
-    image: "redis:alpine" # Используем образ Redis
+    image: "redis:alpine" # используем образ Redis
     ports:
-      - "6379:6379" # Пробрасываем порт Redis
+      - "6379:6379" # пробрасываем порт Redis
